@@ -57,7 +57,94 @@ public class MapGenerator {
 		return map;
 	}
 	
-
+	public float[][] copyMap(float[][] oldMap){
+		float newArray[][] = new float[oldMap.length][oldMap[0].length];
+		for(int j = oldMap.length-1; j>=0; j--){
+			for(int i = oldMap[0].length-1; i>=0;i--){
+				newArray[j][i] = oldMap[j][i];
+			}
+		}
+		return newArray;
+	}
+	
+	public float[][] averageSmooth(int iterations){
+		
+		float[][] newArray = copyMap(map);
+		float avgValue = 0;
+		
+		for(int iter = 0; iter< iterations;iter++){
+			for(int j = map.length-1; j>=0; j--){
+				for(int i = map[0].length-1; i>=0;i--){
+					avgValue = getAvgFromNextTo(new IntVector2(i,j));
+					avgValue *=1.4f;
+					newArray[j][i] = avgValue;
+				}
+			}
+			map = newArray;
+		}
+		
+		return newArray;
+	}
+	
+	private float getAvgFromNextTo(IntVector2 pos){
+		int i = 0;
+		float accumulator = 0;
+		
+		float value = getValueIfExists(pos.x-1, pos.y-1);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		value = getValueIfExists(pos.x, pos.y-1);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		value = getValueIfExists(pos.x+1, pos.y-1);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		value = getValueIfExists(pos.x-1, pos.y);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		value = getValueIfExists(pos.x, pos.y);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		value = getValueIfExists(pos.x+1, pos.y);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		value = getValueIfExists(pos.x-1, pos.y+1);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		value = getValueIfExists(pos.x, pos.y+1);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		value = getValueIfExists(pos.x+1, pos.y+1);
+		if(value != -1){
+			i++;
+			accumulator+=value;
+		}
+		return accumulator/i;
+	}
+	
+	private float getValueIfExists(int x, int y){
+		if(x < 0 || x > map[0].length-1 || y < 0 || y > map.length-1){
+		return -1;
+		}
+		return map[y][x];
+	}
+	
 	private void diamondSquareIterative(){
 		int sideLength = map.length-1;
 		int iterations = 1;
