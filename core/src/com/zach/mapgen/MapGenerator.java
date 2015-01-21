@@ -14,14 +14,21 @@ public class MapGenerator {
 	private static final int Bottom = 2;
 	private static final int Left = 3;
 	
+	private static final float EMPTYSENTINEL = -1000;
 	
-	public static final float HEIGHTSCALINGFACTOR = 100;
-	
+	public static final float HEIGHTSCALINGFACTOR =1;
+	private static float RANSCALING;
+
 	private float[][] map;
-//	private IntVector2[] cornerPositions;
+	private Random ran;
 	
 	public  float[][] genDiamondSquareHeightMap(float[][] map, long seed){
 		this.map = map;
+		for(float f[] : map){
+			for(float x : map[0]){
+				x = EMPTYSENTINEL;
+			}
+		}
 		//IntVector2[] cornerPositions = new IntVector2[4];
 		if(map == null){
 			System.out.println("Map array is not initialized");
@@ -30,31 +37,83 @@ public class MapGenerator {
 			System.out.println("Map must have side length 1+2^x");
 			return map;
 		}
-		Random ran = new Random(seed);
+		ran = new Random(seed);
 		
 		initCorners(ran);
-		IntVector2 initialCorners[] = {new IntVector2(0,map.length), 
-										new IntVector2(map[0].length, map.length),
-										new IntVector2(map[0].length, 0),
+		IntVector2 initialCorners[] = {new IntVector2(0,map.length-1), 
+										new IntVector2(map[0].length-1, map.length-1),
+										new IntVector2(map[0].length-1, 0),
 										new IntVector2()};
-		diamondSquare(initialCorners);
+		diamondSquareIterative();
 		
 		return map;
 	}
 	
 
-	private void diamondSquare(IntVector2[] corners){
-		int xDiff = corners[BottomRight].x - corners[BottomLeft].x;
-		int yDiff = corners[TopLeft].y - corners[BottomLeft].y;
-
-		if(xDiff == 0 || yDiff == 0){
-			return;
+	private void diamondSquareIterative(){
+		int sideLength = map.length-1;
+		int iterations = 1;
+		IntVector2 corners[] = new IntVector2[4];
+		corners[TopLeft] = new IntVector2();
+		corners[TopRight] = new IntVector2();
+		corners[BottomRight] = new IntVector2();
+		corners[BottomLeft] = new IntVector2();
+		
+		RANSCALING = 1f;
+		IntVector2 temp = new IntVector2();
+		
+		while(sideLength > 0){
+//		for(int b = 0; b<5; b++){
+			
+			for(int j = 0; j<iterations; j++){
+				for(int i = 0; i <iterations; i++){
+//					corners[TopLeft].x = i*sideLength;
+//					corners[TopLeft].y = j*sideLength+sideLength;
+//					corners[TopRight].x = i*sideLength+sideLength;
+//					corners[TopRight].y = j*sideLength+sideLength;
+//					corners[BottomRight].x = i*sideLength+sideLength;
+//					corners[BottomRight].y = j*sideLength;
+//					corners[BottomLeft].x = i*sideLength;
+//					corners[BottomLeft].y = j*sideLength;
+//					map[j+sideLength/2][i+sideLength/2] = averageWeight(corners, sideLength/2);
+					temp.x = i*sideLength+sideLength/2;
+					temp.y = j*sideLength+sideLength/2;
+					makeDiamond(temp, sideLength/2);
+				}
+			}
+			
+			for(int j = 0; j<iterations; j++){
+				for(int i = 0; i <iterations; i++){
+					corners[TopLeft].x = i*sideLength;
+					corners[TopLeft].y = j*sideLength+sideLength;
+					corners[TopRight].x = i*sideLength+sideLength;
+					corners[TopRight].y = j*sideLength+sideLength;
+					corners[BottomRight].x = i*sideLength+sideLength;
+					corners[BottomRight].y = j*sideLength;
+					corners[BottomLeft].x = i*sideLength;
+					corners[BottomLeft].y = j*sideLength;
+					reSquareStep(corners, sideLength/2);
+				}
+			}
+			
+			iterations *=2;
+			System.out.println(sideLength);
+			sideLength /=2;
+			RANSCALING /=2;
 		}
-		
-		//midpoint
-		IntVector2 midPoint = new IntVector2(corners[BottomLeft].y+yDiff, corners[BottomLeft].x+xDiff);
-		map[midPoint.y][midPoint.x] = averageWeight(corners); 
-		
+	}
+	
+	private void makeDiamond(IntVector2 mid, int reach){
+		IntVector2 topLeft = new IntVector2(mid.x-reach,mid.y+reach);
+		IntVector2 topRight = new IntVector2(mid.x+reach,mid.y+reach);
+		IntVector2 bottomRight = new IntVector2(mid.x+reach,mid.y-reach);
+		IntVector2 bottomLeft = new IntVector2(mid.x-reach,mid.y-reach);
+		IntVector2 squareCorners[] = {topLeft, topRight, bottomLeft, bottomLeft};
+		map[mid.y][mid.x] = averageWeight(squareCorners, reach);
+	}
+	
+	private void reSquareStep(IntVector2 corners[], int xDiff){
+		int yDiff = xDiff;
 		IntVector2 leftMidPos = new IntVector2();
 		IntVector2 topMidPos = new IntVector2();
 		IntVector2 rightMidPos = new IntVector2();
@@ -63,59 +122,44 @@ public class MapGenerator {
 		//leftMid
 		leftMidPos.y = corners[BottomLeft].y+yDiff;
 		leftMidPos.x = corners[BottomLeft].x;
-		
-		map[leftMidPos.y][leftMidPos.x] = averageWeight(getDiamondCorners(leftMidPos, xDiff));
+		if(map[leftMidPos.y][leftMidPos.x] != EMPTYSENTINEL)
+			map[leftMidPos.y][leftMidPos.x] = averageWeight(getDiamondCorners(leftMidPos, xDiff), xDiff);
 		
 		//topMId
 		topMidPos.y = corners[TopLeft].y;
 		topMidPos.x = corners[TopLeft].x+xDiff;
-		map[topMidPos.y][topMidPos.x] = averageWeight(getDiamondCorners(topMidPos, xDiff));
+		if(map[topMidPos.y][topMidPos.x] != EMPTYSENTINEL)
+			map[topMidPos.y][topMidPos.x] = averageWeight(getDiamondCorners(topMidPos, xDiff), xDiff);
+		
 		//rightMid
 		rightMidPos.y = corners[BottomRight].y+yDiff;
 		rightMidPos.x = corners[BottomRight].x;
-		map[rightMidPos.y][rightMidPos.x] = averageWeight(getDiamondCorners(rightMidPos, xDiff));
+		if(map[rightMidPos.y][rightMidPos.x] != EMPTYSENTINEL)
+			map[rightMidPos.y][rightMidPos.x] = averageWeight(getDiamondCorners(rightMidPos, xDiff), xDiff);
 		
 		//bottomMid
 		bottomMidPos.y = corners[BottomLeft].y;
 		bottomMidPos.x = corners[BottomLeft].x+xDiff;
-		map[bottomMidPos.y][bottomMidPos.x] = averageWeight(getDiamondCorners(bottomMidPos, xDiff));
-		
-		IntVector2 newCorners[] = new IntVector2[4];
-		newCorners[TopLeft] =corners[TopLeft];
-		newCorners[TopRight] =topMidPos; 
-		newCorners[BottomRight] =midPoint;
-		newCorners[BottomLeft] =leftMidPos;
-		diamondSquare(newCorners);
-		newCorners[TopLeft] =topMidPos;
-		newCorners[TopRight] =corners[TopRight]; 
-		newCorners[BottomRight] =rightMidPos;
-		newCorners[BottomLeft] =midPoint;
-		diamondSquare(newCorners);
-		newCorners[TopLeft] =midPoint;
-		newCorners[TopRight] =rightMidPos; 
-		newCorners[BottomRight] =corners[BottomRight];
-		newCorners[BottomLeft] =bottomMidPos;
-		diamondSquare(newCorners);
-		newCorners[TopLeft] =leftMidPos;
-		newCorners[TopRight] =midPoint; 
-		newCorners[BottomRight] =bottomMidPos;
-		newCorners[BottomLeft] =corners[BottomLeft];
-		diamondSquare(newCorners);
+		if(map[bottomMidPos.y][bottomMidPos.x] != EMPTYSENTINEL)
+			map[bottomMidPos.y][bottomMidPos.x] = averageWeight(getDiamondCorners(bottomMidPos, xDiff), xDiff);
+	
 	}
 	
-	private float averageWeight(IntVector2[] cornerPositions){
+	private float averageWeight(IntVector2[] cornerPositions, int sideLength){
 		float avg = 0;
 		int i = 0;
 		float weight = -1;
 		for(IntVector2 iV : cornerPositions){
-			weight = getWeightAt(iV);
+			weight = getWeightAt(iV, sideLength);
 			if(weight != -1){
 				i++;
 				avg += weight;
 			}
 		}
 		
-		return avg/i;
+		float val = (avg/i) + (ran.nextFloat()-.0f)*RANSCALING;
+//		System.out.println(val);
+		return val;
 	}
 	
 	private IntVector2[] getDiamondCorners(IntVector2 mid, int reach){
@@ -127,22 +171,35 @@ public class MapGenerator {
 		return diamondCorners;
 	}
 	
-	private float getWeightAt(IntVector2 pos){
-		return getWeightAt(pos.x, pos.y);
+	private float getWeightAt(IntVector2 pos, int sideLength){
+		return getWeightAt(pos.x, pos.y, sideLength);
 	}
 	
-	private float getWeightAt(int x, int y){
-		if(x < 0 || x > map[0].length || y < 0 || y > map.length){
+	private float getWeightAt(int x, int y, int sideLength){
+		if(x < 0 || x > map[0].length-1 || y < 0 || y > map.length-1){
 			return -1;
 		}
+		
+//		if(x<0){
+//			return map[y][sideLength];
+//		}else if(x > map[0].length - 1){
+//			return map[y][map[0].length - 1 - sideLength];
+//		}
+//		
+//		if(y< 0){
+//			return map[sideLength][x];
+//		}else if(y>map.length-1){
+//			return map[map.length-1-sideLength][x];
+//		}
 		return map[y][x];
 	}
 	
 	private void initCorners(Random ran){
+		System.out.println(map.length);
 		map[0][0]                      = ran.nextFloat() * HEIGHTSCALINGFACTOR;
-		map[map.length][0]             = ran.nextFloat() * HEIGHTSCALINGFACTOR;
-		map[0][map[0].length] 		   = ran.nextFloat() * HEIGHTSCALINGFACTOR;
-		map[map.length][map[0].length] = ran.nextFloat() * HEIGHTSCALINGFACTOR;
+		map[map.length-1][0]             = ran.nextFloat() * HEIGHTSCALINGFACTOR;
+		map[0][map[0].length-1] 		   = ran.nextFloat() * HEIGHTSCALINGFACTOR;
+		map[map.length-1][map[0].length-1] = ran.nextFloat() * HEIGHTSCALINGFACTOR;
 	}
 	
 	

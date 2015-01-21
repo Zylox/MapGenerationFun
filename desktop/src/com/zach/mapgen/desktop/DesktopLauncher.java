@@ -7,6 +7,8 @@ import com.zach.mapgen.MapGenerationCore;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+		config.width = (int) (1+Math.pow(2, 10));
+		config.height = (int) (1+Math.pow(2, 10));
 		new LwjglApplication(new MapGenerationCore(), config);
 	}
 }
