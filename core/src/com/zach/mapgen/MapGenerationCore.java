@@ -26,9 +26,12 @@ public class MapGenerationCore extends Game {
 	private void generateNewMap(){
 		MapGenerator mapgen = new MapGenerator();
 		float[][] map = new float[sideLength][sideLength];
-		map = mapgen.genDiamondSquareHeightMap(map, System.currentTimeMillis());
+//		map = mapgen.genDiamondSquareHeightMap(map, System.currentTimeMillis());
+		map = mapgen.getOpenSimplexHeighMap(map, System.currentTimeMillis());
 		pix = genGreyscaleMap(map);
 		img = new Texture(pix);
+		
+		
 	}
 	@Override
 	public void render () {

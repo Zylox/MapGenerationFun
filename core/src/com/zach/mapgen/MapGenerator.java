@@ -22,6 +22,18 @@ public class MapGenerator {
 	private float[][] map;
 	private Random ran;
 	
+	
+	public float[][] getOpenSimplexHeighMap(float[][] map, long seed){
+		OpenSimplexNoise simplex = new OpenSimplexNoise(seed);
+		for(int j = 0; j<map.length; j++){
+			for(int i = 0; i< map[0].length; i++){
+				float value = (float)simplex.eval(i, j);
+				map[j][i] = value;
+			}
+		}
+		return map;
+	}
+	
 	public  float[][] genDiamondSquareHeightMap(float[][] map, long seed){
 		this.map = map;
 		for(float f[] : map){
