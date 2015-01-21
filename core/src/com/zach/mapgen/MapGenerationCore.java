@@ -3,6 +3,7 @@ package com.zach.mapgen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
@@ -43,7 +44,7 @@ public class MapGenerationCore extends Game {
 		batch.end();
 	}
 	
-	private static final Format FORMAT = Pixmap.Format.RGBA8888;
+	private static final Format FORMAT = Pixmap.Format.RGBA4444;
 	private Pixmap genGreyscaleMap(float[][] map){
 //		Gdx2DPixmap pix = new Gdx2DPixmap(map[0].length, map.length, FORMAT);
 		Pixmap pix = new Pixmap(map[0].length, map.length, FORMAT);
@@ -51,7 +52,8 @@ public class MapGenerationCore extends Game {
 		for(int j = 0; j < map.length; j++){
 			for(int i =0; i < map[0].length; i++){
 				mapValue = map[j][i];
-				pix.setColor(255-mapValue,255-mapValue,255-mapValue,255-mapValue);
+//				System.out.println(mapValue);
+				pix.setColor(new Color(mapValue,mapValue,mapValue,1));
 				pix.drawPixel(i, j);
 			}
 		}

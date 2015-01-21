@@ -16,7 +16,7 @@ public class MapGenerator {
 	
 	private static final float EMPTYSENTINEL = -1000;
 	
-	public static final float HEIGHTSCALINGFACTOR =1;
+	public static final float HEIGHTSCALINGFACTOR = .5f;
 	private static float RANSCALING;
 
 	private float[][] map;
@@ -29,11 +29,7 @@ public class MapGenerator {
 				x = EMPTYSENTINEL;
 			}
 		}
-		//IntVector2[] cornerPositions = new IntVector2[4];
-		if(map == null){
-			System.out.println("Map array is not initialized");
-			return map;
-		}else if(!isPowerOfTwo(map[0].length-1) || !isPowerOfTwo(map.length-1)){
+		if(!isPowerOfTwo(map[0].length-1) || !isPowerOfTwo(map.length-1)){
 			System.out.println("Map must have side length 1+2^x");
 			return map;
 		}
@@ -59,7 +55,7 @@ public class MapGenerator {
 		corners[BottomRight] = new IntVector2();
 		corners[BottomLeft] = new IntVector2();
 		
-		RANSCALING = 1f;
+		RANSCALING = 1.45f;
 		IntVector2 temp = new IntVector2();
 		
 		while(sideLength > 0){
@@ -67,15 +63,6 @@ public class MapGenerator {
 			
 			for(int j = 0; j<iterations; j++){
 				for(int i = 0; i <iterations; i++){
-//					corners[TopLeft].x = i*sideLength;
-//					corners[TopLeft].y = j*sideLength+sideLength;
-//					corners[TopRight].x = i*sideLength+sideLength;
-//					corners[TopRight].y = j*sideLength+sideLength;
-//					corners[BottomRight].x = i*sideLength+sideLength;
-//					corners[BottomRight].y = j*sideLength;
-//					corners[BottomLeft].x = i*sideLength;
-//					corners[BottomLeft].y = j*sideLength;
-//					map[j+sideLength/2][i+sideLength/2] = averageWeight(corners, sideLength/2);
 					temp.x = i*sideLength+sideLength/2;
 					temp.y = j*sideLength+sideLength/2;
 					makeDiamond(temp, sideLength/2);
@@ -97,9 +84,8 @@ public class MapGenerator {
 			}
 			
 			iterations *=2;
-			System.out.println(sideLength);
 			sideLength /=2;
-			RANSCALING /=2;
+			RANSCALING /=1.5f;
 		}
 	}
 	
@@ -157,7 +143,7 @@ public class MapGenerator {
 			}
 		}
 		
-		float val = (avg/i) + (ran.nextFloat()-.0f)*RANSCALING;
+		float val = (avg/i) + (ran.nextFloat()-.5f)*RANSCALING;
 //		System.out.println(val);
 		return val;
 	}
@@ -176,21 +162,21 @@ public class MapGenerator {
 	}
 	
 	private float getWeightAt(int x, int y, int sideLength){
-		if(x < 0 || x > map[0].length-1 || y < 0 || y > map.length-1){
-			return -1;
+//		if(x < 0 || x > map[0].length-1 || y < 0 || y > map.length-1){
+//			return -1;
+//		}
+		
+		if(x<0){
+			return map[y][sideLength];
+		}else if(x > map[0].length - 1){
+			return map[y][map[0].length - 1 - sideLength];
 		}
 		
-//		if(x<0){
-//			return map[y][sideLength];
-//		}else if(x > map[0].length - 1){
-//			return map[y][map[0].length - 1 - sideLength];
-//		}
-//		
-//		if(y< 0){
-//			return map[sideLength][x];
-//		}else if(y>map.length-1){
-//			return map[map.length-1-sideLength][x];
-//		}
+		if(y< 0){
+			return map[sideLength][x];
+		}else if(y>map.length-1){
+			return map[map.length-1-sideLength][x];
+		}
 		return map[y][x];
 	}
 	
